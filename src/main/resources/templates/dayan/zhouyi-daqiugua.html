@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <meta charset="UTF-8">
+    <title>大衍算法</title>
+
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet"  th:href="@{/css/bootstrap.min.css}" >
+    <link rel="stylesheet"  th:href="@{/css/download.css}" >
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script  th:src="@{/js/jqjs.js}"></script>
+    <script  th:src="@{/js/bootstrap.js}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/bootstrap-slider.js"></script>
+
+</head>
+<body>
+
+
+<div th:insert="header::#header"></div>
+<!--大衍算法-->
+
+<!--这个是表单-->
+<div  style="margin-bottom: 10px;margin:10px 40px;">
+
+    <div style="display: flex;justify-content: flex-start;align-items: center">
+    <form class="form-inline" action="/tool/save/dayangsuanfa" method="post">
+        <div class="form-group">
+            <label class="sr-only" for="exampleInputEmail3">求卦</label>
+            <input type="text" class="form-control" name="describe" id="exampleInputEmail3" placeholder="求卦原因">
+            <label class="sr-only" for="exampleInputEmail3">求卦</label>
+            <input type="text" class="form-control" name="guaText" id="result" placeholder="结果">
+
+        </div>
+        <button type="submit"  id="saveGua" class="btn btn-default"   >保存</button>
+<!--        <button type="submit"    class="btn btn-default"   >保存</button>-->
+    </form>
+    <form class="form-inline" style="margin-left: 20px" action="/tool/save/dayanlist">
+        <button type="submit"   class="btn btn-default"   >查看保存的</button>
+    </form>
+    </div>
+
+</div>
+
+<div style="margin-bottom: 10px;margin:10px 40px;">
+    <span id="userCount" style="margin-right: 10px">49</span>
+
+    <input id="range" type="range" min="1" max="49">
+
+    <span id="selectValue" style="margin: 10px 0px">1</span>
+    <button style="margin-left: 10px" class="btn btn-info" onclick="da.start()">重新开始</button>
+    <button style="margin-left: 10px" class="btn btn-info" onclick="da.yes()">确认</button>
+    <button style="margin-left: 10px" class="btn btn-info" onclick="da.showorhide()">隐藏或显示细节</button>
+</div>
+
+
+
+
+
+
+<div>
+    <table id="table"  class="table table-bordered table-striped table-hover">
+        <tr>
+            <td>次数</td>
+            <td>结果</td>
+            <td>其他结果</td>
+        </tr>
+        <tr id="temp-node" style="display: none">
+            <td>第一次</td>
+            <td>结果</td>
+            <td>其他结果</td>
+        </tr>
+
+    </table>
+
+</div>
+
+
+
+
+
+</body>
+
+<script >
+
+    var value=1;
+    var ageChange = function() {
+
+        value= $("#range").val()
+        $("#selectValue").text(value)
+    };
+    $("#range").on('change',ageChange);
+
+    var da=new Da();
+
+
+    $("#saveGua").click(function (e){
+        //保存数据
+        if(da.guaCount<=6){
+            e.preventDefault()
+            alert("不能保存")
+
+        }else
+        {
+        }
+
+
+    })
+
+
+    function Da(){
+        var that=this;
+        this.step=0;
+        this.rightCount=0;
+        this.leftCount=0;
+        //使用之数
+        this.userCount=49;
+        this.yu=0;
+
+        this.toggle=0;
+        this.yuary=0;
+
+        this.guaCount=1;
+        this.result=[];
+
+        this.init=function (){
+
+
+            this.step=0;
+            this.rightCount=0;
+            this.leftCount=0;
+            //使用之数
+            this.userCount=49;
+            this.setUseValue(49)
+            this.yu=0
+            this.yuary=0
+        }
+        //得到左右的不同的值
+        this.getRightLeft=function (){
+            //左边的值
+            this.leftCount=value;
+            this.rightCount=this.userCount-this.leftCount;
+            console.log("userCount"+this.userCount)
+            console.log("righht:"+this.rightCount)
+            console.log("left:"+this.leftCount)
+        }
+
+        //开始
+        this.start=function (){
+            $(".tempNode").remove()
+            this.guaCount=1
+            this.result=[]
+            this.init()
+
+        }
+        //隐藏或显示细节
+        this.showorhide=function (){
+            if(this.toggle==0)
+                $(".tempxi").hide()
+            else
+                $(".tempxi").show()
+
+            this.toggle++;
+            this.toggle%=2
+
+        }
+
+        //设置最大值
+        this.setUseValue=function (count){
+            this.userCount=count;
+            $("#range").attr("max",count)
+            $("#userCount").text(count);
+            $("#range").val(count);
+            $("#selectValue").text(count)
+
+        }
+        this.addTempQ=function (){
+            var temp= $("#temp-node").clone()
+            temp.addClass("tempNode")
+            temp.addClass("tempxi")
+            temp.find("td").eq(0).text(`第${that.step+1}次`)
+            temp.find("td").eq(1).text(`此次余数 ${this.yu}`)
+            temp.find("td").eq(2).text(`余数之和 ${this.yuary} 剩下数量 ${49-this.yuary}`)
+            temp.show()
+            $("#table").append(temp)
+            this.step=this.step+1;
+        }
+
+        //显示最终数字
+        this.showNu=function (){
+            return (49-this.yuary)/4;
+        }
+        //显示最终数字
+        this.showZn=function (){
+            var num=this.showNu()
+            switch (num){
+                case 6:
+                    return "老阴"
+                case 7:
+                    return "少阳"
+                case 8:
+                    return "少阴"
+                case 9:
+                    return "老阳"
+                default:
+                    return "未知"+num
+            }
+
+
+
+        }
+
+
+        this.addTemp=function (){
+            console.log(that.step+1)
+            var temp= $("#temp-node").clone()
+            temp.addClass("tempNode")
+            temp.find("td").eq(0).text(`第${that.step+1}次`)
+            temp.find("td").eq(1).text(`第${this.guaCount}爻数字 ${this.showNu()}`)
+            temp.find("td").eq(2).text(this.showZn())
+            temp.show()
+            $("#table").append(temp)
+            this.result.push(this.showZn())
+            this.step=this.step+1;
+        }
+
+        //求卦结束
+        this.end=function (){
+            if(this.guaCount<=6)
+            {
+                return
+            }
+            var text=""
+            for (var i = 0; i < this.result.length; i++) {
+                if(i==0){
+                    text+=this.result[i]
+                }else
+                {
+                    text+=","+this.result[i]
+                }
+            }
+            $("#result").val(text)
+
+
+        }
+
+        //确认当前值
+        this.yes=function (){
+            console.log(value)
+
+            if(this.guaCount==7){
+                alert("求卦结束！")
+                return
+            }
+            this.getRightLeft()
+            // this.setUseValue(20);
+            var leftYu=0
+            var rightYu=0
+            switch (this.step){
+                case 0:
+                     rightYu= (this.rightCount-1)%4
+                     leftYu=this.leftCount%4
+                        if(leftYu==0) leftYu=4;
+                    if(rightYu==0) rightYu=4;
+                    this.yu=leftYu+rightYu+1;
+                    this.yuary=0
+                    this.yuary+=this.yu
+                    this.addTempQ()
+                    console.log("此次余数："+this.yu)
+                    break;
+                case 1:
+                case 2:
+                    rightYu= (this.rightCount-1)%4
+                    leftYu=this.leftCount%4
+                    if(leftYu==0) leftYu=4;
+                    if(rightYu==0) rightYu=4;
+                    this.yu=leftYu+rightYu+1;
+                    this.yuary+=this.yu;
+                    console.log("此次余数："+this.yu)
+                    this.addTempQ()
+                    break;
+                case 3:
+                    console.log("最后的结果："+this.yuary)
+                    this.addTemp();
+                    this.guaCount++;
+                    this.end();
+                    this.init();
+                    break;
+                default:
+                    alert("已经结束了");
+                    break;
+            }
+
+            this.setUseValue(this.userCount-this.yu)
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</html>
