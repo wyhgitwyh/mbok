@@ -13,5 +13,5 @@ public class GitTest {
     String name;
     String fix;
     String youmieyou1gao1;
-    String youmieyou1gao2;
+    String youmieyou1gao2_marste;
 }
