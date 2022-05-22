@@ -10,4 +10,5 @@ package com.example.mytoolbk.controller;
  */
 public class GitTest {
     String s;
+    String name;
 }
